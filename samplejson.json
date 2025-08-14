@@ -1,0 +1,10 @@
+{
+  "date": "2025-08-14",
+  "senderAddress": "Acme Corporation\n123 Market Street\nBristol, BS1 4ST",
+  "recipientAddress": "Mr. Johnathan Doe\n45 Elm Avenue\nManchester, M14 5QR",
+  "recipient": "Johnathan Doe",
+  "reference": "ACM-2025-001",
+  "subject": "Regarding Your Recent Enquiry",
+  "bodyText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas odio, vitae scelerisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa.\n\nFusce lacinia arcu et nulla. Nulla vitae mauris non felis mollis faucibus. Praesent ac nibh vestibulum, posuere velit in, fermentum nisi. Aenean suscipit, erat quis congue luctus, metus tortor varius justo, eget fringilla magna magna at metus.",
+  "signature": "Mary Smith\nABC"
+}

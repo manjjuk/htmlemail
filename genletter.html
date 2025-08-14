@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HTML Email Generator</title>
+  <style>
+    body {
+      font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif;
+      padding: 30px;
+      background: #f0f0f0;
+      max-width: 600px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif;
+    }
+    textarea { resize: vertical; }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #0078d7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover { background-color: #005fa3; }
+    h1 { text-align: center; margin-bottom: 40px; }
+  </style>
+</head>
+<body>
+  <h1>Create your typeset letter and Print</h1>
+
+  <form id="letterForm" novalidate>
+    <label for="date">Date:</label>
+    <input type="date" id="date" required />
+
+    <label for="senderAddress">Sender Address (multiple lines allowed):</label>
+    <textarea id="senderAddress" rows="3" placeholder="e.g. Company Name&#10;Street Address&#10;City, Post Code" required></textarea>
+
+    <label for="recipientAddress">Recipient Address (multiple lines allowed):</label>
+    <textarea id="recipientAddress" rows="3" placeholder="e.g. John Doe&#10;Street Address&#10;City, Post Code" required></textarea>
+
+    <label for="recipient">Recipient Name:</label>
+    <input type="text" id="recipient" placeholder="e.g. John Doe" required />
+
+    <label for="reference">Reference Number:</label>
+    <input type="text" id="reference" placeholder="e.g. ABC-0123-456" required />
+
+    <label for="subject">Subject:</label>
+    <input type="text" id="subject" placeholder="e.g. Subject Line" required />
+
+    <label for="bodyText">Body Text (paragraphs separated by blank lines):</label>
+    <textarea id="bodyText" rows="10" placeholder="e.g. Insert the content of the letter" required></textarea>
+
+    <label for="signature">Sender Signature:</label>
+    <textarea id="signature" rows="2" placeholder="e.g. Mary Smith&#10;Managing Director" required></textarea>
+
+    <button id="generateBtn" type="button">Generate Page</button>
+    <button type="button" id="downloadBtn">Download Data</button>
+    <input type="file" id="uploadJSON" accept="application/json" style="display:none" />
+    <button type="button" id="uploadBtn">Upload Data</button>
+  </form>
+
+  <script>
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function sanitizeFilename(name) {
+      return String(name || "letter")
+        .replace(/[\\/:*?"<>|]+/g, "_")
+        .slice(0, 100) || "letter";
+    }
+
+    function formatForHtml(text) {
+      return escapeHtml(text).replace(/\n/g, "<br />");
+    }
+
+    function getFormData() {
+      return {
+        date: document.getElementById('date').value,
+        senderAddress: document.getElementById('senderAddress').value,
+        recipientAddress: document.getElementById('recipientAddress').value,
+        recipient: document.getElementById('recipient').value,
+        reference: document.getElementById('reference').value,
+        subject: document.getElementById('subject').value,
+        bodyText: document.getElementById('bodyText').value,
+        signature: document.getElementById('signature').value
+      };
+    }
+
+    function setFormData(data) {
+      if (!data || typeof data !== 'object') return;
+      Object.keys(data).forEach(key => {
+        const el = document.getElementById(key);
+        if (el) el.value = data[key];
+      });
+    }
+
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+      document.getElementById('uploadJSON').click();
+    });
+
+    document.getElementById('uploadJSON').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try { setFormData(JSON.parse(e.target.result)); } 
+        catch { alert("Invalid JSON file."); }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const data = getFormData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "letter-data.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('generateBtn').addEventListener('click', generatePage);
+
+    function generatePage() {
+      const form = document.getElementById('letterForm');
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+
+      const { date, senderAddress, recipientAddress, recipient, reference, subject, bodyText, signature } = getFormData();
+      const dateObj = date ? new Date(date) : new Date();
+      const formattedDate = dateObj.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+      const paragraphs = String(bodyText).trim().split(/\n\s*\n/).map(p => `<p>${escapeHtml(p.trim())}</p>`).join("\n");
+
+      const senderHtml = senderAddress ? `<div style="text-align:right; line-height:1.2;">${formatForHtml(senderAddress)}</div>` : '';
+      const recipientHtml = recipientAddress ? `<div style="text-align:left; line-height:1.2; margin-top:20px;">${formatForHtml(recipientAddress)}</div>` : '';
+
+      const htmlContent = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${escapeHtml(subject)}</title>
+<style>
+body { margin:30px; font-family:Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif; font-size:12pt; line-height:1.2; }
+p { text-align:justify; word-break:break-word; hyphens:auto; margin-bottom:1em; }
+h1 { font-size:14pt; font-weight:bold; margin-top:20px; margin-bottom:20px; }
+.date-ref { text-align:right; margin-bottom:20px; }
+.closing { margin-top:30px; margin-left:30%; white-space:pre-line; }
+@media print { @page{size:A4;margin:20mm;} body{background:#fff;} }
+</style>
+</head>
+<body>
+${senderHtml}
+${recipientHtml}
+<p class="date-ref">Date: ${escapeHtml(formattedDate)}<br>Ref: ${escapeHtml(reference)}</p>
+<h1>${escapeHtml(subject)}</h1>
+${paragraphs}
+<div class="closing">${formatForHtml(signature)}</div>
+</body>
+</html>`;
+
+      const win = window.open("", "_blank");
+      win.document.open();
+      win.document.write(htmlContent);
+      win.document.close();
+    }
+  </script>
+</body>
+</html>
