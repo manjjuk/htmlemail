@@ -63,13 +63,13 @@
     <input type="text" id="reference" placeholder="e.g. ABC123" required />
 
     <label for="subject">Subject:</label>
-    <input type="text" id="subject" required />
+    <input type="text" id="subject" placeholder="Subject Line" required />
 
     <label for="bodyText">Body Text (paragraphs separated by blank lines):</label>
     <textarea id="bodyText" rows="10" placeholder="e.g. Mail content" required></textarea>
 
-    <label for="signature">Sender Signature:</label>
-    <input type="text" id="signature" placeholder="e.g. John Smith" required />
+    <label for="signature">Sender Signature (multiple lines allowed):</label>
+    <textarea id="signature" rows="2" placeholder="e.g. John Smith" required></textarea>
 
     <button type="submit">Generate Page</button>
   </form>
@@ -83,14 +83,17 @@
       const reference = document.getElementById('reference').value.trim();
       const subject = document.getElementById('subject').value.trim();
       const bodyText = document.getElementById('bodyText').value.trim();
-      const signature = document.getElementById('signature').value.trim();
+      const signatureInput = document.getElementById('signature').value.trim();
 
+      // Format date
       const dateObj = new Date(dateInput);
       const options = { day: '2-digit', month: 'short', year: 'numeric' };
       const formattedDate = dateObj.toLocaleDateString('en-GB', options);
 
+      // Split body text into paragraphs
       const paragraphs = bodyText.split(/\n\s*\n/);
 
+      // Escape HTML
       function escapeHtml(text) {
         return text
           .replace(/&/g, "&amp;")
@@ -98,6 +101,7 @@
           .replace(/>/g, "&gt;");
       }
 
+      // Body paragraphs HTML
       let paragraphsHtml = '';
       paragraphs.forEach(p => {
         if (p.trim()) {
@@ -105,6 +109,10 @@
         }
       });
 
+      // Signature HTML with line breaks
+      const signatureHtml = escapeHtml(signatureInput).replace(/\n/g, '<br>');
+
+      // Full email HTML
       const htmlContent = `<!doctype html>
 <html>
 <head>
@@ -112,154 +120,35 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>${escapeHtml(subject)}</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f4f5f7;
-      -webkit-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-    }
-    img {
-      border: 0;
-      height: auto;
-      line-height: 100%;
-      outline: none;
-      text-decoration: none;
-      display: block;
-    }
-    .header img {
-      display: inline-block;
-      max-width: 180px;
-      height: auto;
-    }
-    a {
-      -webkit-text-size-adjust: none;
-      color: inherit;
-      text-decoration: none;
-    }
-    .email-wrap {
-      width: 100%;
-      padding: 20px 0;
-      background: #f4f5f7;
-    }
-    .container {
-      max-width: 680px;
-      margin: 0 auto;
-      background: #ffffff;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .inner {
-      padding: 28px;
-      font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif;
-      color: #000000;
-    }
-    h1 {
-      margin-top: 0;
-      font-size: 22px;
-      line-height: 28px;
-      font-weight: 600;
-      color: #000000;
-    }
-    p {
-      font-size: 15px;
-      line-height: 1.0; 
-      color: #333333;
-      text-align: justify;
-      word-break: break-word;
-      hyphens: auto;
-    }
-    .footer {
-      font-size: 12px;
-      color: #555555;
-      padding: 18px;
-      text-align: center;
-      background: transparent !important;
-    }
-    .footer img {
-      display: block;
-      margin: 0 auto 8px auto;
-      max-width: 180px;
-      height: auto;
-    }
-    .date-ref {
-      font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif;
-      font-size: 13px;
-      text-align: right;
-      margin: 0 0 10px 0;
-      color: #333333;
-    }
-    .header {
-      background: transparent !important;
-      padding: 18px 20px;
-      color: #000000;
-      text-align: right;
-    }
-    .closing {
-      max-width: 80%;
-      margin-left: 30%;
-      font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif;
-      font-size: 15px;
-      color: #333333;
-      margin-top: 30px;
-      line-height: 1.4;
-    }
-    @media only screen and (max-width: 60%) {
-      .container {
-        width: 100% !important;
-        border-radius: 0;
-      }
-      .inner {
-        padding: 16px;
-      }
-      h1 {
-        font-size: 20px;
-      }
-      .closing {
-        max-width: 100%;
-        margin-left: 250px;
-      }
+    body { margin:0; padding:0; background:#f4f5f7; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; display:block; }
+    a { -webkit-text-size-adjust:none; color:inherit; text-decoration:none; }
+    .email-wrap { width:100%; padding:20px 0; background:#f4f5f7; }
+    .container { max-width:680px; margin:0 auto; background:#ffffff; border-radius:6px; overflow:hidden; }
+    .inner { padding:28px; font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif; color:#000000; }
+    h1 { margin-top:0; font-size:22px; line-height:28px; font-weight:600; color:#000000; }
+    p { font-size:15px; line-height:1.4; color:#333333; text-align:justify; word-break:break-word; hyphens:auto; }
+    .footer { font-size:12px; color:#555555; padding:18px; text-align:center; background:transparent !important; }
+    .date-ref { font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif; font-size:13px; text-align:right; margin:0 0 10px 0; color:#333333; }
+    .header { background: transparent !important; padding: 18px 20px; color: #000000; text-align: right; }
+    .closing { max-width:80%; margin-left:30%; font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Arial, Helvetica, sans-serif; font-size:15px; color:#333333; margin-top:30px; line-height:1.4; }
+    @media only screen and (max-width:600px) {
+      .container { width:100% !important; border-radius:0; }
+      .inner { padding:16px; }
+      h1 { font-size:20px; }
+      .closing { max-width:100%; margin-left:0; }
     }
     @media print {
-      @page {
-        size: A4;
-        margin: 20mm;
-      }
-      body, .email-wrap {
-        background: #ffffff !important;
-        padding: 0 !important;
-      }
-      .container {
-        background: #ffffff !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-      }
-      h1, p, .inner, .closing {
-        color: #000000 !important;
-      }
-      a {
-        color: #000000 !important;
-        text-decoration: underline !important;
-      }
-      p {
-        font-size: 13pt;
-        line-height: 20pt;
-      }
-      h1 {
-        font-size: 24px;
-      }
-      .footer {
-        color: #000000 !important;
-        background: transparent !important;
-        text-decoration: none !important;
-      }
-      .footer a {
-        color: #000000 !important;
-        text-decoration: underline !important;
-      }
-      .no-print {
-        display: none !important;
-      }
+      @page { size:A4; margin:20mm; }
+      body, .email-wrap { background:#ffffff !important; padding:0 !important; }
+      .container { background:#ffffff !important; box-shadow:none !important; border-radius:0 !important; }
+      h1, p, .inner, .closing { color:#000000 !important; }
+      a { color:#000000 !important; text-decoration:underline !important; }
+      p { font-size:13pt; line-height:20pt; }
+      h1 { font-size:24px; }
+      .footer { color:#000000 !important; background:transparent !important; text-decoration:none !important; }
+      .footer a { color:#000000 !important; text-decoration:underline !important; }
+      .no-print { display:none !important; }
     }
   </style>
 </head>
@@ -272,24 +161,13 @@
             <tr>
               <td class="inner">
                 <p class="date-ref">Date: ${escapeHtml(formattedDate)} | Ref: ${escapeHtml(reference)}</p>
-
                 <h1>${escapeHtml(subject)}</h1>
-
                 <p>Dear ${escapeHtml(recipient)},</p>
-
                 ${paragraphsHtml}
-
-                
-
                 <p class="closing">
                   Yours Sincerely,<br />
-                  ${escapeHtml(signature)}
+                  ${signatureHtml}
                 </p>
-              </td>
-            </tr>
-            <tr>
-              <td class="inner" style="padding-top: 0;">
-                <p></p>
               </td>
             </tr>
           </table>
