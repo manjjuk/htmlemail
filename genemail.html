@@ -84,14 +84,14 @@
       const subject = document.getElementById('subject').value.trim();
       const bodyText = document.getElementById('bodyText').value.trim();
       const signature = document.getElementById('signature').value.trim();
-      const signatureHtml = signature.split("\n").map(escapeHtml).join("<br />");
+      const signatureHtml = formatForHtml(signature);
       
       const dateObj = new Date(dateInput);
       const options = { day: '2-digit', month: 'short', year: 'numeric' };
       const formattedDate = dateObj.toLocaleDateString('en-GB', options);
 
       const paragraphs = bodyText.split(/\n\s*\n/);
-
+      
       function escapeHtml(text) {
         return text
           .replace(/&/g, "&amp;")
@@ -306,6 +306,11 @@
       newWindow.document.write(htmlContent);
       newWindow.document.close();
     }
+
+      function formatForHtml(text) {
+        return text.split("\n").map(escapeHtml).join("<br />");
+      }
+    
   </script>
 </body>
 </html>
