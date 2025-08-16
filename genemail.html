@@ -84,6 +84,7 @@
       const subject = document.getElementById('subject').value.trim();
       const bodyText = document.getElementById('bodyText').value.trim();
       const signature = document.getElementById('signature').value.trim();
+      const signatureHtml = escapeHtml(signature).replace(/\n/g, "<br />");
 
       const dateObj = new Date(dateInput);
       const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -106,6 +107,7 @@
       });
 
       const htmlContent = `<!doctype html>
+
 <html>
 <head>
   <meta charset="utf-8" />
@@ -283,7 +285,7 @@
 
                 <p class="closing">
                   Yours Sincerely,<br />
-                  ${escapeHtml(signature)}
+                  ${escapeHtml(signatureHtml)}
                 </p>
               </td>
             </tr>
